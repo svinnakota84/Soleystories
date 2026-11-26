@@ -15,8 +15,8 @@ import type { VoiceEngine } from './three/audioEngine';
 
 export default function App() {
   const [episodes, setEpisodes] = useState<EpisodeData[]>(EPISODES);
-  const [selectedEpisodeId, setSelectedEpisodeId] = useState<number>(11);
-  const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0);
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState<number>(1);
+  const [activeSceneIndex, setActiveSceneIndex] = useState<number>(1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('elevenlabs');
   const [formatMode, setFormatMode] = useState<VideoFormatMode>('preview');

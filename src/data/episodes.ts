@@ -67,36 +67,36 @@ export const CHARACTER_SHEETS: CharacterSheet[] = [
     name: 'Benny',
     ageOrRole: '3 years old · Curious Explorer',
     summary:
-      'Peachy skin, messy sandy blonde hair, wide blue eyes, oversized green striped hoodie with bear ears, rolled-up jeans, and blue velcro sneakers.',
-    imagePath: '/src/assets/images/char_benny_turnaround_1795554180598.jpg',
-    palette: ['#4ADE80', '#3B82F6', '#FDE68A', '#1E3A8A'],
+      'Rosy cheeks, tousled honey-auburn hair, wide bright blue Pixar eyes, forest-green and white horizontal striped hoodie with drawstrings, rolled jeans, and blue sneakers.',
+    imagePath: '/assets/aistudio/image_af1869e5.png',
+    palette: ['#2B7A4B', '#FFFFFF', '#B85B25', '#3B82F6'],
     voiceActor: 'Puck',
     promptUsed:
-      '3D character turnaround sheet, Benny, 3-year-old boy, peachy skin, messy sandy blonde hair, wide blue eyes, round cheeks, oversized green striped hoodie with bear ears on hood, rolled-up jeans, blue velcro sneakers, curious head-tilt pose, T-pose and A-pose reference, pure white background, flat lighting, Pixar style, consistent proportions',
+      '3D Pixar character, Benny, 3-year-old boy, rosy cheeks, tousled honey-auburn hair, wide bright blue eyes, forest-green and white horizontal striped hoodie with white drawstrings, Pixar cinematic lighting, consistent proportions',
   },
   {
     id: 'pip',
     name: 'Pip',
-    ageOrRole: 'Golden Puppy (Baby Stage) · Alternate Bunny Sheet',
+    ageOrRole: 'Fluffy Golden Puppy · Co-Star',
     summary:
-      'Appears in the 3D Stage as the fluffy golden-tan playground puppy from your video (FTGtiB-hXD4); this bunny-hood turnaround sheet is also available for thumbnail composites.',
-    imagePath: '/src/assets/images/char_pip_turnaround_1795554182933.jpg',
-    palette: ['#EAB364', '#0EA5E9', '#93C5FD', '#FB923C'],
+      'Fluffy golden-tan puppy with floppy ears, joyful open panting smile with pink tongue, and a brown leather collar with a round gold paw-print tag.',
+    imagePath: '/assets/aistudio/image_af1869e5.png',
+    palette: ['#F3BE6B', '#6B3A1D', '#FACC15', '#FB7185'],
     voiceActor: 'Kore',
     promptUsed:
-      '3D character turnaround sheet, Pip, 2-year-old toddler, rosy cheeks, tuft of orange curls, huge green-gold eyes, onesie with animal hood (today: bunny), chunky legs, waddling stance, clapping hands pose, T-pose and A-pose reference, pure white background, flat lighting, Pixar style, consistent proportions',
+      '3D Pixar fluffy golden puppy named Pip, floppy golden-tan ears, big warm brown eyes, happy open smile with pink tongue, brown leather collar with gold paw-print tag, Pixar style',
   },
   {
     id: 'train',
     name: 'Choo-Choo Snack Train',
-    ageOrRole: 'Hero Wooden Toy Train · Ep 1 Base',
+    ageOrRole: 'Royal Blue & Gold Engine + Scalloped Cookie Car',
     summary:
-      'Friendly mint-and-peach wooden engine with smiling smokebox face, spinning pastel wheels, magnetic couplers, and 3 snack-filled open cars.',
-    imagePath: '/src/assets/images/train_snack_ep1_1795554182983.jpg',
-    palette: ['#6EE7B7', '#FDBA74', '#FDE047', '#DDD6FE'],
+      'Royal blue and gold engine with glowing front lantern, crimson funnel, and a plush red-velvet scalloped golden cookie passenger car on red star-hub wheels.',
+    imagePath: '/assets/aistudio/image_af1869e5.png',
+    palette: ['#2563EB', '#E39E44', '#DC2626', '#FACC15'],
     voiceActor: 'Charon',
     promptUsed:
-      'Hero prop turnaround, Choo-Choo Snack Train, friendly wooden toy train engine + 3 detachable cars, rounded edges, pastel paint (engine: mint with peach trim, car1: butter yellow, car2: lavender, car3: peach), expressive face on smokebox (large eyes, smiling mouth), spinning pastel wheels, magnetic couplers, snack cargo visible in open cars, soft wood grain texture, 16:9 hero angle, pure white background, studio lighting, Pixar style',
+      'Cinematic 3D Pixar toy train: royal blue and gold locomotive with red funnel and front lantern pulling a scalloped golden cookie passenger car with plush red velvet backrest cushions and red wheels with gold stars',
   },
 ];
 
@@ -105,7 +105,7 @@ export const EPISODES: EpisodeData[] = [
     id: 1,
     title: 'All Aboard the Choo-Choo Snack Train!',
     trainName: 'Choo-Choo Snack Train',
-    trainVisualSummary: 'Mint & peach smiling engine + 3 pastel cars with apples, bananas, crackers & cheese.',
+    trainVisualSummary: 'Royal blue & gold locomotive + scalloped cookie passenger car with red star wheels and snack cars.',
     themeColor: '#10B981',
     accentColor: '#FB923C',
     skyTint: '#BAE6FD',
@@ -1245,8 +1245,8 @@ export function generateCompletePromptsTxt(episodesList: EpisodeData[]): string 
   lines.push('--------------------------------------------------------------------');
   lines.push('PART 7: CHARACTER BIBLE QUICK REFERENCE');
   lines.push('--------------------------------------------------------------------');
-  lines.push('- Baby Stage (Scene 1): Baby Benny (green short-sleeve tee, blue shorts), Baby Mia (orange pinafore dress, yellow tee, two high puffs), Pip (fluffy golden-tan puppy) by the Rainbow Slide.');
-  lines.push('- Big Stage (Scenes 2–4): Big Mia (yellow dungarees, red heart patch, red sneakers, front-tooth gap), Big Benny (green striped bear-ear hoodie, blue sneakers), Pip wagging beside the track.');
+  lines.push('- Baby Stage (Scene 1): Baby Benny (green short-sleeve tee, blue shorts), Baby Mia (orange pinafore dress, yellow tee, two high puffs), Pip (fluffy golden puppy with brown collar & gold paw tag) by the Rainbow Slide.');
+  lines.push('- Big Stage (Scenes 2–4): Mia (yellow dungarees over white tee, dark puffs with yellow ties), Benny (tousled honey-auburn hair, forest-green & white striped hoodie), and Pip riding inside the scalloped golden cookie passenger car.');
   lines.push('');
 
   lines.push('--------------------------------------------------------------------');

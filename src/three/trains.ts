@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export interface TrainAssembly {
-  units: THREE.Group[]; // [engine, car1, car2, ...]
+  units: THREE.Group[]; // [engine, passengerCar, ...]
+  passengerCar: THREE.Group;
   wheels: THREE.Object3D[];
   specialSpinners: THREE.Object3D[];
   steamPuffs: { mesh: THREE.Mesh; life: number; speed: number; driftX: number }[];
@@ -63,9 +64,10 @@ function addWheelsToUnit(
   wheelZOffsets: number[],
   wheelColor: number | number[],
   wheelsOut: THREE.Object3D[],
-  iceCubeMode = false
+  iceCubeMode = false,
+  starHubs = false
 ) {
-  const hubMat = makeWoodMat(0xe2e8f0, 0.22, 0.65);
+  const hubMat = makeWoodMat(starHubs ? 0xfacc15 : 0xe2e8f0, 0.22, 0.65);
 
   wheelZOffsets.forEach((zOff, idx) => {
     const col = Array.isArray(wheelColor) ? wheelColor[idx % wheelColor.length] : wheelColor;
@@ -77,8 +79,8 @@ function addWheelsToUnit(
           transparent: true,
           opacity: 0.82,
         })
-      : makeWoodMat(col, 0.42, 0.08);
-    [-0.62, 0.62].forEach((xOff) => {
+      : makeWoodMat(col, 0.4, 0.08);
+    [-0.68, 0.68].forEach((xOff) => {
       const wheelGroup = new THREE.Group();
       wheelGroup.position.set(xOff, 0.34, zOff);
 
@@ -90,7 +92,10 @@ function addWheelsToUnit(
       wheel.castShadow = true;
       wheelGroup.add(wheel);
 
-      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.19, 14), hubMat);
+      const hub = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 0.13, 0.19, starHubs ? 5 : 14),
+        hubMat
+      );
       hub.rotation.z = Math.PI / 2;
       wheelGroup.add(hub);
 
@@ -319,6 +324,79 @@ function buildOpenCar(
   return car;
 }
 
+function buildCookiePassengerCar(
+  wheelsOut: THREE.Object3D[],
+  texturesOut: THREE.Texture[]
+): THREE.Group {
+  const car = new THREE.Group();
+  const woodTex = createWoodGrainTexture();
+  texturesOut.push(woodTex);
+
+  const biscuitMat = new THREE.MeshStandardMaterial({ color: 0xe39e44, roughness: 0.78 });
+  const crustMat = new THREE.MeshStandardMaterial({ color: 0xc97b28, roughness: 0.72 });
+  const velvetRed = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.65 });
+  const chocoChipMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.55 });
+
+  // Wooden chassis & platform
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(1.38, 0.22, 2.05),
+    new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.6 })
+  );
+  base.position.set(0, 0.42, 0);
+  base.castShadow = true;
+  car.add(base);
+
+  // Red plush bench inside
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.18, 1.55), velvetRed);
+  bench.position.set(0, 0.56, 0);
+  car.add(bench);
+
+  [-0.44, 0, 0.44].forEach((bz) => {
+    const cushion = new THREE.Mesh(new THREE.SphereGeometry(0.24, 14, 12), velvetRed);
+    cushion.position.set(0.38, 0.88, bz);
+    cushion.scale.set(0.62, 1.25, 0.96);
+    car.add(cushion);
+  });
+
+  // Golden biscuit side walls + scalloped cookie rim + chocolate dots
+  [-0.64, 0.64].forEach((sx) => {
+    const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.56, 1.92), biscuitMat);
+    sideWall.position.set(sx, 0.78, 0);
+    sideWall.castShadow = true;
+    car.add(sideWall);
+
+    for (let z = -0.82; z <= 0.82; z += 0.27) {
+      const scallop = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), crustMat);
+      scallop.position.set(sx, 1.07, z);
+      scallop.scale.set(0.7, 0.72, 1.05);
+      car.add(scallop);
+
+      const chip = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), chocoChipMat);
+      chip.position.set(sx + (sx > 0 ? 0.065 : -0.065), 0.76 + (Math.round(z * 10) % 2) * 0.08, z);
+      car.add(chip);
+    }
+  });
+
+  const frontWall = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.56, 0.14), biscuitMat);
+  frontWall.position.set(0, 0.78, 0.92);
+  const backWall = frontWall.clone();
+  backWall.position.z = -0.92;
+  car.add(frontWall, backWall);
+
+  for (let x = -0.52; x <= 0.52; x += 0.26) {
+    const fScallop = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 10), crustMat);
+    fScallop.position.set(x, 1.07, 0.92);
+    fScallop.scale.set(1.0, 0.72, 0.7);
+    const bScallop = fScallop.clone();
+    bScallop.position.z = -0.92;
+    car.add(fScallop, bScallop);
+  }
+
+  addWheelsToUnit(car, [0.56, -0.56], 0xdc2626, wheelsOut, false, true);
+  addCouplers(car, 1.06, -1.06);
+  return car;
+}
+
 export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): TrainAssembly {
   const units: THREE.Group[] = [];
   const wheels: THREE.Object3D[] = [];
@@ -328,13 +406,13 @@ export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): Trai
   const steamOriginLocal = new THREE.Vector3(0, 1.85, 0.95);
   let steamColor = 0xffffff;
 
-  // Episode-specific Engine + Cars
+  // Episode-specific Engine + Hero Passenger Cookie Car + Snack Cars
   if (episodeId === 1) {
-    // Ep 1: Choo-Choo Snack Train (matches train_snack_ep1_1795554182983.jpg!)
+    // Ep 1: Royal Blue, Gold & Crimson Lantern Snack Train + Scalloped Cookie Passenger Car!
     const engine = buildStandardEngine(
-      0x86efac,
-      0xfdba74,
-      [0x86efac, 0xfde047, 0xfdba74],
+      0x2563eb,
+      0xf59e0b,
+      0xdc2626,
       wheels,
       textures,
       false,
@@ -342,29 +420,12 @@ export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): Trai
     );
     units.push(engine);
 
-    const car1 = buildOpenCar(0xfde047, 0xfde047, wheels, textures, false, {
-      bg: '#FDE047',
-      title: 'SNACK CAR',
-      sub: '1',
-    });
-    // Red apples + banana coins
-    [-0.22, 0.22].forEach((x) => {
-      const apple = new THREE.Mesh(new THREE.SphereGeometry(0.21, 14, 14), makeWoodMat(0xef4444, 0.35));
-      apple.position.set(x, 0.96, 0.28);
-      car1.add(apple);
-      const banana = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.16, 0.16, 0.1, 14),
-        makeWoodMat(0xfef08a, 0.45)
-      );
-      banana.rotation.x = 0.4;
-      banana.position.set(x, 0.94, -0.25);
-      car1.add(banana);
-    });
-    units.push(car1);
+    const cookieCar = buildCookiePassengerCar(wheels, textures);
+    units.push(cookieCar);
 
-    const car2 = buildOpenCar(0xd8b4fe, [0x93c5fd, 0xd8b4fe], wheels, textures, false, {
+    const car2 = buildOpenCar(0xd8b4fe, 0xdc2626, wheels, textures, false, {
       bg: '#D8B4FE',
-      title: 'TREAT CAR',
+      title: 'SNACK CAR',
       sub: '2',
     });
     for (let i = 0; i < 4; i++) {
@@ -377,13 +438,13 @@ export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): Trai
     }
     units.push(car2);
 
-    const car3 = buildOpenCar(0xfdba74, [0xc4b5fd, 0xf9a8d4], wheels, textures, false, {
+    const car3 = buildOpenCar(0xfdba74, 0xdc2626, wheels, textures, false, {
       bg: '#FDBA74',
-      title: 'FREIGHT CAR',
+      title: 'FRUIT CAR',
       sub: '3',
     });
-    [0xd97706, 0xef4444, 0x4f46e5].forEach((c, idx) => {
-      const treat = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 14), makeWoodMat(c, 0.48));
+    [0xef4444, 0xfacc15, 0x22c55e].forEach((c, idx) => {
+      const treat = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 14), makeWoodMat(c, 0.42));
       treat.position.set((idx - 1) * 0.22, 0.95, idx % 2 === 0 ? 0.2 : -0.2);
       car3.add(treat);
     });
@@ -633,14 +694,17 @@ export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): Trai
     engine.add(crown);
     units.push(engine);
 
-    [0x14b8a6, 0xf472b6, 0x8b5cf6].forEach((c, idx) => {
+    const cookieCar = buildCookiePassengerCar(wheels, textures);
+    units.push(cookieCar);
+
+    [0x14b8a6, 0xf472b6].forEach((c, idx) => {
       const car = buildOpenCar(c, 0xfbbf24, wheels, textures);
       const table = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.08, 1.2), makeWoodMat(0xffffff, 0.4));
       table.position.set(0, 1.08, 0);
       car.add(table);
       const platter = new THREE.Mesh(
         new THREE.CylinderGeometry(0.26, 0.26, 0.14, 18),
-        makeWoodMat(idx === 0 ? 0xef4444 : idx === 1 ? 0xfacc15 : 0x38bdf8, 0.35)
+        makeWoodMat(idx === 0 ? 0xef4444 : 0xfacc15, 0.35)
       );
       platter.position.set(0, 1.18, 0);
       car.add(platter);
@@ -650,6 +714,7 @@ export function buildEpisodeTrain(episodeId: number, isSoftwareGl = false): Trai
 
   return {
     units,
+    passengerCar: units[1] || units[0],
     wheels,
     specialSpinners,
     steamPuffs,

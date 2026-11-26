@@ -59,6 +59,13 @@ const _tan = new THREE.Vector3();
 const _look = new THREE.Vector3();
 const _camGoal = new THREE.Vector3();
 const _targetGoal = new THREE.Vector3();
+const _carSide = new THREE.Vector3();
+const _carFwd = new THREE.Vector3();
+const _localOff = new THREE.Vector3();
+const _rideYaw = new THREE.Quaternion().setFromAxisAngle(
+  new THREE.Vector3(0, 1, 0),
+  -Math.PI * 0.44
+);
 
 export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
   episode,
@@ -201,7 +208,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
     controls.enableDamping = !isSoftwareGl;
     controls.dampingFactor = 0.06;
     controls.maxPolarAngle = Math.PI * 0.46;
-    controls.minDistance = 4.2;
+    controls.minDistance = 2.4;
     controls.maxDistance = 34;
     controls.target.set(0, 0.85, 2.5);
     controls.addEventListener('start', () => {
@@ -372,15 +379,43 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
       }
       prevBabyStageRef.current = isBabyNow;
 
+      const passengerCar = train?.passengerCar ?? null;
+      const isRidingTrain = !isBabyNow && Boolean(passengerCar);
+
       const activeSpeakerId = isPlayingRef.current ? sceneData.speaker.toLowerCase() : '';
       characters.forEach((rig) => {
+        if (isRidingTrain && passengerCar) {
+          if (rig.id === 'mia') {
+            _localOff.set(-0.06, 0.54, -0.45);
+          } else if (rig.id === 'benny') {
+            _localOff.set(-0.06, 0.56, 0.0);
+          } else {
+            _localOff.set(-0.18, 0.82, 0.46);
+          }
+          _localOff.applyQuaternion(passengerCar.quaternion).add(passengerCar.position);
+          rig.root.position.set(_localOff.x, _localOff.y, _localOff.z);
+          rig.baseY = _localOff.y;
+          rig.root.quaternion.copy(passengerCar.quaternion).multiply(_rideYaw);
+        } else {
+          if (rig.id === 'benny') {
+            rig.root.position.set(-1.12, 0.09, 3.05);
+          } else if (rig.id === 'pip') {
+            rig.root.position.set(0.04, 0.09, 3.4);
+          } else {
+            rig.root.position.set(1.12, 0.09, 2.98);
+          }
+          rig.baseY = 0.09;
+          rig.root.quaternion.identity();
+        }
+
         const isSpeaking = activeSpeakerId === rig.id;
         animateCharacter(
           rig,
           elapsed,
           isPlayingRef.current ? sceneData.characterAction : 'wave',
           isBabyNow,
-          isSpeaking
+          isSpeaking,
+          isRidingTrain
         );
       });
 
@@ -413,11 +448,32 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
       world.sparkleGroup.rotation.y = elapsed * (0.3 + sparkleBurstRef.current * 1.8);
 
       const preset = camPresetRef.current;
+      const isTrackingTrain = isRidingTrain && (preset === 'characters' || preset === 'train');
       if (!userControllingRef.current || transitionActiveRef.current) {
         const distBoost = formatModeRef.current === 'short' ? 3.1 : 0;
         if (preset === 'wide') {
           _camGoal.set(0, 6.2, 18.2 + distBoost);
           _targetGoal.set(0, 1.2, 2.6);
+        } else if (isTrackingTrain && passengerCar) {
+          _carSide.set(-1, 0, 0).applyQuaternion(passengerCar.quaternion).normalize();
+          _carFwd.set(0, 0, 1).applyQuaternion(passengerCar.quaternion).normalize();
+          if (preset === 'characters') {
+            _camGoal
+              .copy(passengerCar.position)
+              .addScaledVector(_carSide, 3.85 + distBoost * 0.6)
+              .addScaledVector(_carFwd, 1.35);
+            _camGoal.y = 1.85;
+            _targetGoal.copy(passengerCar.position).addScaledVector(_carFwd, 0.42);
+            _targetGoal.y = 1.08;
+          } else {
+            _camGoal
+              .copy(passengerCar.position)
+              .addScaledVector(_carSide, 4.95 + distBoost * 0.7)
+              .addScaledVector(_carFwd, 2.35);
+            _camGoal.y = 2.05;
+            _targetGoal.copy(passengerCar.position).addScaledVector(_carFwd, 1.15);
+            _targetGoal.y = 1.0;
+          }
         } else if (preset === 'characters') {
           const speakerOffset =
             activeSpeakerId === 'benny'
@@ -443,7 +499,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
           _targetGoal.set(0, 1.0, 1.5);
         }
 
-        const dampRate = preset === 'train' || preset === 'orbit' ? 2.6 : 3.8;
+        const dampRate = preset === 'train' || preset === 'orbit' || isTrackingTrain ? 3.4 : 3.8;
         const cinematicDrift = isPlayingRef.current ? Math.sin(elapsed * 0.55) * 0.14 : 0;
         camera.position.x = THREE.MathUtils.damp(
           camera.position.x,
@@ -459,6 +515,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
 
         if (
           transitionActiveRef.current &&
+          !isTrackingTrain &&
           preset !== 'train' &&
           preset !== 'orbit' &&
           camera.position.distanceTo(_camGoal) < 0.08
@@ -799,9 +856,9 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
           <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
             {(
               [
-                ['auto', 'Auto: Baby → Big'],
-                ['baby', 'Baby Stage'],
-                ['big', 'Big Characters'],
+                ['auto', 'Auto: Baby → Train'],
+                ['baby', 'Baby Playground'],
+                ['big', 'Riding Train'],
               ] as [CharacterStageMode, string][]
             ).map(([mode, label]) => (
               <button
@@ -910,7 +967,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
               <span>Ep {String(episode.id).padStart(2, '0')}</span>
               <span aria-hidden="true">·</span>
               <span className={isBabyStageActive ? 'text-amber-700 font-semibold' : 'text-teal-700 font-semibold'}>
-                {isBabyStageActive ? 'Baby Stage' : 'Big Characters'}
+                {isBabyStageActive ? 'Baby Playground' : 'Riding Train · Big Kids'}
               </span>
               <span aria-hidden="true">·</span>
               <span>

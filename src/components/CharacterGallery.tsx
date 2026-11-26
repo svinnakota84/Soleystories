@@ -59,18 +59,18 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
             {!continuityFailed ? (
               <img
-                src="/assets/aistudio/image_c52b83de.png"
-                alt="Big Mia and Big Benny character turnaround reference"
+                src="/assets/aistudio/image_af1869e5.png"
+                alt="Mia, Benny and Pip riding inside the scalloped cookie train car"
                 onError={() => setContinuityFailed(true)}
                 className="h-44 w-full object-cover"
               />
             ) : (
               <div className="flex h-44 flex-col items-center justify-center p-4 text-center text-xs text-slate-500">
-                Big Mia &amp; Big Benny Reference
+                Mia, Benny &amp; Pip · Cookie Train Look
               </div>
             )}
             <div className="border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-700">
-              Scene 2+ · Big Mia &amp; Big Benny (Screenshot)
+              Scene 2+ · Riding Cookie Train (Target 3D Look)
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({
         <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-slate-500">
-              <span>Matched to Your Video · Baby Playground → Big Cast</span>
+              <span>Matched to Your Reference · Baby Playground → Train Ride</span>
               <a
                 href="https://www.youtube.com/watch?v=FTGtiB-hXD4"
                 target="_blank"
@@ -90,10 +90,10 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({
               </a>
             </div>
             <h3 className="font-display text-lg font-semibold text-slate-900">
-              Rainbow Slide Playground → Big Mia, Big Benny &amp; Pip
+              Rainbow Slide Playground → Mia, Benny &amp; Pip Riding the Train
             </h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              The 3D Stage opens at the Rainbow Slide &amp; Swing Set playground with Baby Benny (green tee), Baby Mia (orange pinafore), and Pip the golden puppy—then transitions in Scene 2 into Big Mia and Big Benny from your turnaround sheet.
+              Scene 1 opens at the Rainbow Slide playground, then transitions into the 3D train ride with Mia (yellow dungarees, curly puffs with yellow ties), Benny (tousled honey-auburn hair, green &amp; white striped hoodie), and Pip (golden puppy with brown collar &amp; gold paw tag) riding inside the scalloped cookie car.
             </p>
           </div>
 
