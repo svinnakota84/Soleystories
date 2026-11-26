@@ -1,0 +1,8 @@
+{
+  "name": "Choo-Choo Snack Train Studio",
+  "description": "Interactive 3D kids animation studio and 10-episode YouTube production suite featuring Mia, Benny, Pip, and the Choo-Choo Snack Train.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
