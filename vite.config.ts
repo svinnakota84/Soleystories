@@ -7,6 +7,16 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [
+      {
+        name: 'studio-source-entry',
+        transformIndexHtml: {
+          order: 'pre',
+          handler(html, context) {
+            if (context.path !== '/index.html' && context.path !== '/') return html;
+            return fs.readFileSync(path.resolve(__dirname, 'src/studio-entry.html'), 'utf8');
+          },
+        },
+      },
       react(),
       tailwindcss(),
       // Copies src/assets into dist/ so root-relative URLs like

@@ -18,19 +18,11 @@ Independent cinematic 3D kids animation studio, episode creator, 1080p FFmpeg MP
    npm start
    ```
 
-## Push to a New GitHub Repository & Connect Zoho Domain (`soleystories`)
+## Soleystories deployment
 
-1. Create an empty repository on GitHub (e.g., `storysprout-studio`) at https://github.com/new.
-2. Unzip `storysprout-studio-website.zip` into a folder and push:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial StorySprout Studio commit"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/storysprout-studio.git
-   git push -u origin main
-   ```
-3. Deploy the repository on a Node host (Render, Railway, Fly.io, or a VPS with `ffmpeg`), then add your host's `CNAME` / `A` DNS records inside **Zoho Domains** for `soleystories` to point your domain to the studio.
+GitHub Pages serves the repository root at `https://soleystories.radiantsparkllc.com/`. After changing the app, run `bun install --frozen-lockfile` followed by `node scripts/build-pages.mjs`. Commit the generated root `index.html` and `pages-assets/` with the source changes. Vite uses `src/studio-entry.html` for development and Node builds.
+
+The custom domain's static preview runs the browser UI and animation stage. Server features require an authenticated Node deployment with persistent storage and FFmpeg. Set `NODE_ENV=production` when running that deployment and keep provider credentials server-side.
 
 ## Publishing Approved Videos to `@RadiantSparkGlobal`
 
