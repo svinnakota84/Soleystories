@@ -113,10 +113,10 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
           <h2 className="font-display text-2xl font-semibold text-slate-900">
-            Create &amp; Browse {episodes.length} Cinematic 3D Episodes
+            {staticPreview ? "Browse" : "Create & Browse"} {episodes.length} Cinematic 3D Episodes
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Watch any story live on the 3D stage, or click <strong>Create Episode</strong> to compose a new Baby-to-Big Mia, Benny &amp; Pip video for the Approval Queue.
+            Watch any story live on the 3D stage. {!staticPreview && <>Click <strong>Create Episode</strong> to compose a new Mia, Benny &amp; Pip video for the Approval Queue.</>}
           </p>
         </div>
 
@@ -124,18 +124,18 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
           <span className="text-xs font-medium text-slate-500 tabular-nums">
             {episodes.length} Stories · {episodes.length * 4} 3D Scenes
           </span>
-          <button
+          {!staticPreview && <button
             type="button"
             onClick={() => setShowCreator((v) => !v)}
             className="flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>{showCreator ? 'Hide Episode Creator' : 'Create Episode'}</span>
-          </button>
+          </button>}
         </div>
       </div>
 
-      {showCreator && (
+      {!staticPreview && showCreator && (
         <form
           onSubmit={handleSubmit}
           className="space-y-4 rounded-2xl border border-teal-200 bg-white p-6 shadow-xs"

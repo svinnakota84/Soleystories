@@ -266,6 +266,9 @@ export default function App() {
             </a>
           </nav>
 
+          {staticPreview ? (
+            <a className="shrink-0 text-xs font-semibold text-teal-700 hover:underline" href="#episodes">Browse episodes</a>
+          ) : (
           <div className="flex items-center shrink-0">
             <button
               type="button"
@@ -276,6 +279,7 @@ export default function App() {
               <span>Create Episode</span>
             </button>
           </div>
+          )}
         </div>
       </header>
 
@@ -367,7 +371,7 @@ export default function App() {
         {staticPreview ? (
           <section id="production" className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5">
             <h2 className="font-display text-xl font-semibold">Production &amp; approval</h2>
-            <p className="my-2 max-w-2xl text-sm text-slate-600">Create episodes and download WebM recordings here. Open the connected studio for server-side MP4 conversion and approvals. Production queue checks are planned for :00 and :30.</p>
+            <p className="my-2 max-w-2xl text-sm text-slate-600">Watch episodes and download WebM recordings here. Open the connected studio for server-side MP4 conversion and approvals. Production queue checks are planned for :00 and :30.</p>
             <a className="text-sm font-semibold text-teal-700 underline" href={aiStudioUrl}>Open Google AI Studio</a>
           </section>
         ) : <ApprovalAndArchitectureSection
