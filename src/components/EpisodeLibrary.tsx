@@ -16,6 +16,7 @@ interface EpisodeLibraryProps {
   selectedEpisodeId: number;
   createOpenTick?: number;
   onSelectEpisode: (episodeId: number, autoPlay?: boolean) => void;
+  staticPreview?: boolean;
   onRecordEpisode: (episodeId: number) => void;
   onOpenThumbnail: (episode: EpisodeData) => void;
   onAddExtensionStory: (input: ExtensionStoryInput) => void;
@@ -39,6 +40,7 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
   selectedEpisodeId,
   createOpenTick = 0,
   onSelectEpisode,
+  staticPreview = false,
   onRecordEpisode,
   onOpenThumbnail,
   onAddExtensionStory,
@@ -107,7 +109,7 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
   };
 
   return (
-    <section id="episodes" className="space-y-6">
+    <section id="episodes" className="scroll-mt-24 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
           <h2 className="font-display text-2xl font-semibold text-slate-900">
@@ -145,7 +147,8 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
                 Create Episode · Baby-to-Big Mia, Benny &amp; Pip (@RadiantSparkGlobal)
               </h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {!staticPreview && <>
               <input
                 type="text"
                 value={themeHint}
@@ -165,7 +168,7 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
                   <Wand2 className="h-3.5 w-3.5 text-teal-600" />
                 )}
                 <span>Suggest Story Idea</span>
-              </button>
+              </button></>}
               <button
                 type="button"
                 onClick={() => setShowCreator(false)}
@@ -259,7 +262,7 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
               className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
             >
               <Film className="h-3.5 w-3.5" />
-              <span>Create &amp; Render MP4 for Approval</span>
+              <span>{staticPreview ? "Create & Record Preview" : "Create & Render MP4 for Approval"}</span>
             </button>
             <button
               type="submit"
@@ -336,7 +339,7 @@ export const EpisodeLibrary: React.FC<EpisodeLibraryProps> = ({
                   onClick={() => onRecordEpisode(ep.id)}
                   className="flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-800 hover:bg-teal-100 whitespace-nowrap cursor-pointer"
                 >
-                  <span>Render</span>
+                  <span>{staticPreview ? "Record" : "Render"}</span>
                 </button>
 
                 <button

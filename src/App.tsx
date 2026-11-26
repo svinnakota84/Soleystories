@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download, Plus } from 'lucide-react';
 import { EPISODES, type EpisodeData } from './data/episodes';
 import {
@@ -13,12 +13,26 @@ import { YouTubeGrowthHub } from './components/YouTubeGrowthHub';
 import { ThumbnailStudioModal } from './components/ThumbnailStudioModal';
 import type { VoiceEngine } from './three/audioEngine';
 
+const staticPreview = document.getElementById('root')?.hasAttribute('data-static-preview') ?? false;
+const draftKey = 'soleystories.episode-drafts.v1';
+const aiStudioUrl = 'https://aistudio.google.com/apps/ec156a6d-459e-42ae-9722-479df2d21eeb?showPreview=true&showAssistant=true&appParams=radiant-spark';
+
+function loadEpisodes(): EpisodeData[] {
+  if (!staticPreview) return EPISODES;
+  try {
+    const drafts = JSON.parse(localStorage.getItem(draftKey) ?? '[]');
+    return Array.isArray(drafts) ? [...EPISODES, ...drafts] : EPISODES;
+  } catch {
+    return EPISODES;
+  }
+}
+
 export default function App() {
-  const [episodes, setEpisodes] = useState<EpisodeData[]>(EPISODES);
+  const [episodes, setEpisodes] = useState<EpisodeData[]>(loadEpisodes);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<number>(1);
   const [activeSceneIndex, setActiveSceneIndex] = useState<number>(1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('elevenlabs');
+  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>(staticPreview ? 'browser' : 'elevenlabs');
   const [formatMode, setFormatMode] = useState<VideoFormatMode>('preview');
   const [recordRequestTick, setRecordRequestTick] = useState<number>(0);
   const [createOpenTick, setCreateOpenTick] = useState<number>(0);
@@ -26,6 +40,12 @@ export default function App() {
   const [uploadingVideo, setUploadingVideo] = useState<boolean>(false);
   const [thumbnailEpisode, setThumbnailEpisode] = useState<EpisodeData | null>(null);
   const [customBabyIntro, setCustomBabyIntro] = useState<string>('');
+
+  const [recordedClip, setRecordedClip] = useState<{ url: string; filename: string } | null>(null);
+  const [studioNotice, setStudioNotice] = useState('');
+  useEffect(() => () => {
+    if (recordedClip) URL.revokeObjectURL(recordedClip.url);
+  }, [recordedClip]);
 
   const activeEpisode =
     episodes.find((ep) => ep.id === selectedEpisodeId) || episodes[0];
@@ -46,6 +66,10 @@ export default function App() {
   };
 
   const handleRecordedClipReady = async (clip: RecordedClip) => {
+    if (staticPreview) {
+      setRecordedClip({ url: URL.createObjectURL(clip.blob), filename: clip.filename });
+      return;
+    }
     setUploadingVideo(true);
     try {
       const params = new URLSearchParams({
@@ -59,16 +83,20 @@ export default function App() {
         tags: clip.episode.youtubeMeta.tags.join(','),
       });
 
-      await fetch(`/api/studio/queue/upload?${params.toString()}`, {
+      const response = await fetch(`/api/studio/queue/upload?${params.toString()}`, {
         method: 'POST',
         headers: { 'Content-Type': clip.blob.type || 'video/webm' },
         body: clip.blob,
       });
 
+      if (!response.ok) throw new Error('The recording could not be added to the approval queue.');
+      setStudioNotice('');
       setQueueRefreshTick((t) => t + 1);
       document
         .getElementById('approval-queue')
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      setStudioNotice(error instanceof Error ? error.message : 'The upload failed.');
     } finally {
       setUploadingVideo(false);
     }
@@ -167,7 +195,16 @@ export default function App() {
       ],
     };
 
-    setEpisodes((prev) => [...prev, newEpisode]);
+    const nextEpisodes = [...episodes, newEpisode];
+    if (staticPreview) {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(nextEpisodes.filter(ep => ep.id > Math.max(...EPISODES.map(base => base.id)))));
+        setStudioNotice('Episode saved in this browser.');
+      } catch {
+        setStudioNotice('This browser could not save the episode. It is available until you reload.');
+      }
+    }
+    setEpisodes(nextEpisodes);
     setSelectedEpisodeId(nextId);
     setActiveSceneIndex(0);
     document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -188,7 +225,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:gap-6 sm:px-6">
           <a
             href="#stage"
             className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
@@ -196,19 +233,19 @@ export default function App() {
             StorySprout Studio
           </a>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+          <nav className="hidden lg:flex items-center gap-4 text-sm font-medium text-slate-600">
             <a
               href="#stage"
               className="hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
               3D Stage
             </a>
-            <a
+            {!staticPreview && <a
               href="#approval-queue"
               className="hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
               Approval Queue
-            </a>
+            </a>}
             <a
               href="#episodes"
               className="hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
@@ -216,7 +253,7 @@ export default function App() {
               {episodes.length} Stories
             </a>
             <a
-              href="#architecture"
+              href={staticPreview ? "#production" : "#architecture"}
               className="hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
               Architecture
@@ -242,8 +279,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-16 px-6 py-8">
-        <section id="stage" className="space-y-5">
+      <main className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:px-6">
+        <section id="stage" className="scroll-mt-24 space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-2xl">
               <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
@@ -262,7 +299,7 @@ export default function App() {
                 {activeEpisode.title}
               </h1>
               <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                {activeEpisode.trainVisualSummary} Preview live in cinematic 3D, render 1080p MP4s, and approve every clip before the 30-minute queue check.
+                {activeEpisode.trainVisualSummary}
               </p>
             </div>
 
@@ -285,6 +322,7 @@ export default function App() {
                 <button
                   key={ep.id}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => handleSelectEpisode(ep.id, false)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium tabular-nums transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     active
@@ -301,6 +339,7 @@ export default function App() {
 
           <Stage3DViewport
             episode={activeEpisode}
+            staticPreview={staticPreview}
             activeSceneIndex={activeSceneIndex}
             onSceneIndexChange={setActiveSceneIndex}
             isPlaying={isPlaying}
@@ -314,17 +353,33 @@ export default function App() {
             onExportThumbnail={() => setThumbnailEpisode(activeEpisode)}
             onRecordedClipReady={handleRecordedClipReady}
           />
+          {studioNotice && <p role="status" className="text-sm text-slate-700">{studioNotice}</p>}
+          {recordedClip && (
+            <div className="grid gap-3 rounded-2xl border border-teal-200 bg-teal-50 p-4">
+              <h2 className="font-display text-lg font-semibold">Recorded preview</h2>
+              <p className="text-sm text-slate-600">Built-in narration plays live. The download contains the stage and its mixed audio.</p>
+              <video className="max-h-96 w-full rounded-lg bg-slate-900" src={recordedClip.url} controls playsInline />
+              <a className="w-fit rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white" href={recordedClip.url} download={recordedClip.filename}>Download WebM</a>
+            </div>
+          )}
         </section>
 
-        <ApprovalAndArchitectureSection
+        {staticPreview ? (
+          <section id="production" className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="font-display text-xl font-semibold">Production &amp; approval</h2>
+            <p className="my-2 max-w-2xl text-sm text-slate-600">Create episodes and download WebM recordings here. Open the connected studio for server-side MP4 conversion and approvals. Production queue checks are planned for :00 and :30.</p>
+            <a className="text-sm font-semibold text-teal-700 underline" href={aiStudioUrl}>Open Google AI Studio</a>
+          </section>
+        ) : <ApprovalAndArchitectureSection
           queueRefreshTick={queueRefreshTick}
           uploadingVideo={uploadingVideo}
           episodes={episodes}
           onRecordEpisode={handleRecordEpisode}
           onOpenThumbnail={(ep) => setThumbnailEpisode(ep)}
-        />
+        />}
 
         <EpisodeLibrary
+          staticPreview={staticPreview}
           episodes={episodes}
           selectedEpisodeId={selectedEpisodeId}
           createOpenTick={createOpenTick}
@@ -339,11 +394,11 @@ export default function App() {
           onCustomBabyIntroChange={setCustomBabyIntro}
         />
 
-        <YouTubeGrowthHub
+        {!staticPreview && <YouTubeGrowthHub
           episode={activeEpisode}
           episodes={episodes}
           onOpenThumbnail={(ep) => setThumbnailEpisode(ep)}
-        />
+        />}
       </main>
 
       <footer className="mt-16 border-t border-slate-200 bg-white">
@@ -352,14 +407,14 @@ export default function App() {
             StorySprout Studio · {episodes.length} Episodes · Independent of Business Website
           </span>
           <div className="flex flex-wrap items-center gap-4">
-            <a
+            {!staticPreview && <a
               href="/api/export/website-zip"
               download="storysprout-studio-website.zip"
               className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-semibold text-slate-800 hover:bg-slate-100"
             >
               <Download className="h-3.5 w-3.5 text-teal-600" />
               <span>Download Studio (.zip)</span>
-            </a>
+            </a>}
             <span>Channel: @RadiantSparkGlobal · Approval Mode</span>
           </div>
         </div>

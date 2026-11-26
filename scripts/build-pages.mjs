@@ -7,8 +7,7 @@ const deploymentAssets = 'pages-assets';
 mkdirSync(deploymentAssets, { recursive: true });
 const html = readFileSync('dist/index.html', 'utf8')
   .replaceAll('"/assets/', '"/pages-assets/')
-  .replace('<div id="root"></div>', `<p role="status" style="margin:0;padding:.6rem 1rem;background:#eaf6ee;color:#20392d">Public preview · Use Google AI Studio for server-backed rendering and approvals.</p>
-    <div id="root"></div>`);
+  .replace('<div id="root"></div>', '<div id="root" data-static-preview></div>');
 writeFileSync('index.html', html);
 
 for (const name of readdirSync('dist/assets', { withFileTypes: true })) {

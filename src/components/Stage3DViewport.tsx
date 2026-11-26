@@ -51,6 +51,7 @@ interface Stage3DViewportProps {
   customBabyIntro?: string;
   recordRequestTick: number;
   onExportThumbnail: () => void;
+  staticPreview?: boolean;
   onRecordedClipReady: (clip: RecordedClip) => void;
 }
 
@@ -80,6 +81,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
   customBabyIntro = '',
   recordRequestTick,
   onExportThumbnail,
+  staticPreview = false,
   onRecordedClipReady,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -740,7 +742,14 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
 
     const renderer = rendererRef.current;
     const audio = audioRef.current;
-    if (!renderer || !audio) return;
+    if (!renderer || !audio) {
+      setStatusNotice('The 3D stage needs to load before recording.');
+      return;
+    }
+    if (typeof MediaRecorder === 'undefined' || !renderer.domElement.captureStream || !MediaRecorder.isTypeSupported('video/webm')) {
+      setStatusNotice('WebM recording is unavailable in this browser. You can still play the 3D preview.');
+      return;
+    }
 
     const canvasStream = renderer.domElement.captureStream(30);
     const audioStream = audio.getRecordingStream();
@@ -765,6 +774,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
     };
 
     recorder.onstop = () => {
+      canvasStream.getTracks().forEach(track => track.stop());
       const dur = recordSecondsRef.current;
       setIsRecording(false);
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
@@ -830,7 +840,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
       {/* Format Mode, Stage Growth & Voice Agent Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
+          <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
             {(
               [
                 ['full5min', '5-Min Full Video (16:9)'],
@@ -853,7 +863,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
+          <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
             {(
               [
                 ['auto', 'Auto: Baby → Train'],
@@ -879,14 +889,14 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-slate-500">Voice:</span>
-          <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
+          <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
             {(
               [
                 ['elevenlabs', 'ElevenLabs'],
                 ['gemini', 'Gemini TTS'],
                 ['browser', 'Built-in'],
               ] as [VoiceEngine, string][]
-            ).map(([eng, label]) => (
+            ).filter(([engine]) => !staticPreview || engine === "browser").map(([eng, label]) => (
               <button
                 key={eng}
                 type="button"
@@ -902,14 +912,14 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
             ))}
           </div>
 
-          <button
+          {!staticPreview && <button
             type="button"
             onClick={triggerElevenLabsSfx}
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 whitespace-nowrap cursor-pointer"
           >
             <Music className="h-3.5 w-3.5 text-teal-600" />
             <span>Music Bed</span>
-          </button>
+          </button>}
 
           {!isShort && (
             <button
@@ -937,7 +947,7 @@ export const Stage3DViewport: React.FC<Stage3DViewportProps> = ({
       {/* 3D Canvas Container (switches cleanly to 9:16 vertical center frame for Shorts) */}
       <div
         className={`relative mx-auto rounded-2xl overflow-hidden border border-slate-200 bg-sky-100 shadow-sm transition-all ${
-          isShort ? 'w-full max-w-[380px] h-[640px]' : 'w-full h-[540px] lg:h-[620px]'
+          isShort ? 'w-full max-w-[380px] aspect-[9/16]' : 'w-full h-[340px] sm:h-[540px] lg:h-[620px]'
         }`}
       >
         <div ref={mountRef} className="w-full h-full" />
