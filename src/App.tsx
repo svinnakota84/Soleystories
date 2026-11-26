@@ -132,10 +132,10 @@ export default function App() {
       targetAge: 'Ages 2–5',
       learningGoal: input.learningGoal,
       youtubeMeta: {
-        title: `${input.title} 🚂✨ Mia, Benny & Pip | StorySprout Studio 3D`,
+        title: `${input.title} 🚂✨ Mia, Benny & Pip | Soleystories Studio 3D`,
         thumbnailHook: input.title.toUpperCase().slice(0, 18),
         thumbnailSubtext: input.learningGoal,
-        description: `${input.babyIntroLine}\n\n${input.adventureLine}\n\nSubscribe to @RadiantSparkGlobal for weekly StorySprout Studio 3D adventures!`,
+        description: `${input.babyIntroLine}\n\n${input.adventureLine}\n\nSubscribe to @RadiantSparkGlobal for weekly Soleystories Studio 3D adventures!`,
         tags: [
           'storysprout studio',
           'radiantsparkglobal',
@@ -143,7 +143,7 @@ export default function App() {
           'baby to big 3d kids',
         ],
         revenueStrategy:
-          'Original StorySprout Studio episode queued for human approval and @RadiantSparkGlobal release.',
+          'Original Soleystories Studio episode queued for human approval and @RadiantSparkGlobal release.',
         estimatedWatchHook: '0–5s Baby Playground Whistle Reveal',
       },
       scenes: [
@@ -189,7 +189,7 @@ export default function App() {
           characterAction: 'dance',
           speaker: 'Pip',
           narration:
-            'Woof-woof hooray! Subscribe to RadiantSparkGlobal for our next StorySprout Studio episode!',
+            'Woof-woof hooray! Subscribe to RadiantSparkGlobal for our next Soleystories Studio episode!',
           onScreenPrompt: 'Subscribe · @RadiantSparkGlobal',
         },
       ],
@@ -230,7 +230,7 @@ export default function App() {
             href="#stage"
             className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
           >
-            StorySprout Studio
+            Soleystories Studio
           </a>
 
           <nav className="hidden lg:flex items-center gap-4 text-sm font-medium text-slate-600">
@@ -404,7 +404,7 @@ export default function App() {
       <footer className="mt-16 border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-slate-500">
           <span>
-            StorySprout Studio · {episodes.length} Episodes · Independent of Business Website
+            Soleystories Studio · {episodes.length} Episodes · Independent of Business Website
           </span>
           <div className="flex flex-wrap items-center gap-4">
             {!staticPreview && <a
