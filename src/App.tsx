@@ -14,6 +14,7 @@ import { ThumbnailStudioModal } from './components/ThumbnailStudioModal';
 import type { VoiceEngine } from './three/audioEngine';
 
 const staticPreview = document.getElementById('root')?.hasAttribute('data-static-preview') ?? false;
+const youtubeChannelUrl = 'https://www.youtube.com/@RadiantSparkGlobal';
 const draftKey = 'soleystories.episode-drafts.v1';
 const aiStudioUrl = 'https://aistudio.google.com/apps/ec156a6d-459e-42ae-9722-479df2d21eeb?showPreview=true&showAssistant=true&appParams=radiant-spark';
 
@@ -267,7 +268,12 @@ export default function App() {
           </nav>
 
           {staticPreview ? (
-            <a className="shrink-0 text-xs font-semibold text-teal-700 hover:underline" href="#episodes">Browse episodes</a>
+            <a
+              className="shrink-0 rounded-lg bg-red-700 px-3 py-2 text-xs font-semibold text-white hover:bg-red-800"
+              href={youtubeChannelUrl}
+            >
+              Watch on YouTube
+            </a>
           ) : (
           <div className="flex items-center shrink-0">
             <button
@@ -419,7 +425,10 @@ export default function App() {
               <Download className="h-3.5 w-3.5 text-teal-600" />
               <span>Download Studio (.zip)</span>
             </a>}
-            <span>Channel: @RadiantSparkGlobal · Approval Mode</span>
+            <a className="font-semibold text-teal-700 hover:underline" href={youtubeChannelUrl}>
+              Benny, Mia &amp; Pip on YouTube
+            </a>
+            {!staticPreview && <span>Approval Mode</span>}
           </div>
         </div>
       </footer>
